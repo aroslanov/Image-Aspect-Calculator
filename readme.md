@@ -1,4 +1,4 @@
-# Aspect Ratio Calculator
+# Image Aspect Ratio Calculator
 
 This is a simple PyQt6 application to calculate and visualize aspect ratios. It allows you to input dimensions, select common aspect ratios, and drag-and-drop images to auto-fill dimensions. This project was inspired by [Andrew Hedges' Aspect Ratio Calculator](https://andrew.hedges.name/experiments/aspect_ratio/).
 
@@ -91,7 +91,3 @@ This project is licensed under the MIT License.
 ## Acknowledgements
 
 This project was inspired by [Andrew Hedges' Aspect Ratio Calculator](https://andrew.hedges.name/experiments/aspect_ratio/). Thank you for providing the original idea and calculations.
-
----
-
-Feel free to customize this `README.md` as per your project's specifics.
