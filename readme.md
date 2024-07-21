@@ -1,7 +1,3 @@
-Sure, here is the updated `README.md` with instructions on how to install the dependencies without using `requirements.txt`.
-
----
-
 # Aspect Ratio Calculator
 
 This is a simple PyQt6 application to calculate and visualize aspect ratios. It allows you to input dimensions, select common aspect ratios, and drag-and-drop images to auto-fill dimensions. This project was inspired by [Andrew Hedges' Aspect Ratio Calculator](https://andrew.hedges.name/experiments/aspect_ratio/).
