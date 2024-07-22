@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QCheckBox, QSpinBox
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QCheckBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QPixmap
 from PIL import Image
@@ -13,17 +13,16 @@ class AspectRatioCalculator(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Aspect Ratio Calculator')
-        self.setGeometry(100, 100, 400, 400)
-        self.setAcceptDrops(True)
+        self.setFixedSize(400, 300)  # Set a fixed size for the window
+        self.setAcceptDrops(True)  # Enable drop events
 
         main_layout = QVBoxLayout()
+        main_layout.setSpacing(5)  # Reduce spacing between widgets
 
         # First row: W1 and W2
         w1_layout = QHBoxLayout()
-        self.w1_input = QSpinBox()
-        self.w2_input = QSpinBox()
-        self.w1_input.setRange(1, 10000)
-        self.w2_input.setRange(1, 10000)
+        self.w1_input = QLineEdit()
+        self.w2_input = QLineEdit()
         w1_layout.addWidget(QLabel('W1'))
         w1_layout.addWidget(self.w1_input)
         w1_layout.addWidget(QLabel('W2'))
@@ -32,19 +31,13 @@ class AspectRatioCalculator(QWidget):
 
         # Second row: H1 and H2
         h1_layout = QHBoxLayout()
-        self.h1_input = QSpinBox()
-        self.h2_input = QSpinBox()
-        self.h1_input.setRange(1, 10000)
-        self.h2_input.setRange(1, 10000)
+        self.h1_input = QLineEdit()
+        self.h2_input = QLineEdit()
         h1_layout.addWidget(QLabel('H1'))
         h1_layout.addWidget(self.h1_input)
         h1_layout.addWidget(QLabel('H2'))
         h1_layout.addWidget(self.h2_input)
         main_layout.addLayout(h1_layout)
-
-        # Connect valueChanged signals to calculate_ratio
-        self.w2_input.valueChanged.connect(self.calculate_ratio)
-        self.h2_input.valueChanged.connect(self.calculate_ratio)
 
         # Common ratios dropdown
         ratio_layout = QHBoxLayout()
@@ -78,14 +71,15 @@ class AspectRatioCalculator(QWidget):
         drop_thumbnail_layout = QHBoxLayout()
         self.drop_label = QLabel('Drop an image here to auto-fill dimensions')
         self.drop_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.drop_label.setStyleSheet('border: 2px dashed #aaa; padding: 10px;')
-        drop_thumbnail_layout.addWidget(self.drop_label)
+        self.drop_label.setStyleSheet('border: 2px dashed #aaa; padding: 5px;')
+        self.drop_label.setFixedHeight(60)  # Set a fixed height for the drop area
+        drop_thumbnail_layout.addWidget(self.drop_label, 3)  # Give more space to the drop label
         
         self.thumbnail_label = QLabel()
-        self.thumbnail_label.setFixedSize(100, 100)
+        self.thumbnail_label.setFixedSize(60, 60)  # Reduce the size of the thumbnail
         self.thumbnail_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumbnail_label.setStyleSheet('border: 1px solid #aaa;')
-        drop_thumbnail_layout.addWidget(self.thumbnail_label)
+        drop_thumbnail_layout.addWidget(self.thumbnail_label, 1)  # Give less space to the thumbnail
         
         main_layout.addLayout(drop_thumbnail_layout)
 
@@ -93,24 +87,29 @@ class AspectRatioCalculator(QWidget):
 
     def calculate_ratio(self):
         try:
-            w1 = self.w1_input.value()
-            h1 = self.h1_input.value()
-            w2 = self.w2_input.value()
-            h2 = self.h2_input.value()
+            w1 = float(self.w1_input.text() or 0)
+            h1 = float(self.h1_input.text() or 0)
+            w2 = float(self.w2_input.text() or 0)
+            h2 = float(self.h2_input.text() or 0)
 
             # Calculate aspect ratio from W1 and H1
             if w1 and h1:
-                gcd = self.gcd(w1, h1)
+                gcd = self.gcd(int(w1), int(h1))
                 ratio = f"{int(w1/gcd)}:{int(h1/gcd)}"
                 self.result_label.setText(f"Your aspect ratio is: {ratio}")
 
             # Calculate missing dimension if one is provided
             if w2 and not h2 and w1 and h1:
-                h2 = int((h1 / w1) * w2)
-                self.h2_input.setValue(h2)
+                h2 = (h1 / w1) * w2
             elif h2 and not w2 and w1 and h1:
-                w2 = int((w1 / h1) * h2)
-                self.w2_input.setValue(w2)
+                w2 = (w1 / h1) * h2
+
+            if self.round_checkbox.isChecked():
+                w2 = round(w2)
+                h2 = round(h2)
+
+            self.w2_input.setText(str(w2) if w2 else '')
+            self.h2_input.setText(str(h2) if h2 else '')
 
         except ValueError as e:
             self.result_label.setText(f"Error: Please enter valid numbers")
@@ -122,11 +121,12 @@ class AspectRatioCalculator(QWidget):
 
     def set_common_ratio(self, index):
         ratio_text = self.ratio_combo.currentText()
+        # Use regex to find the dimensions in the string
         match = re.search(r'(\d+)\s*x\s*(\d+)', ratio_text)
         if match:
-            width, height = map(int, match.groups())
-            self.w1_input.setValue(width)
-            self.h1_input.setValue(height)
+            width, height = match.groups()
+            self.w1_input.setText(width)
+            self.h1_input.setText(height)
             self.calculate_ratio()
         else:
             self.result_label.setText("Error: Could not parse the selected ratio")
@@ -143,12 +143,12 @@ class AspectRatioCalculator(QWidget):
             try:
                 with Image.open(file_path) as img:
                     width, height = img.size
-                    self.w1_input.setValue(width)
-                    self.h1_input.setValue(height)
+                    self.w1_input.setText(str(width))
+                    self.h1_input.setText(str(height))
                     self.calculate_ratio()
                     
                     # Create thumbnail
-                    img.thumbnail((100, 100))
+                    img.thumbnail((60, 60))  # Resize image to fit in our thumbnail label
                     img_byte_arr = io.BytesIO()
                     img.save(img_byte_arr, format='PNG')
                     img_byte_arr = img_byte_arr.getvalue()
@@ -161,7 +161,7 @@ class AspectRatioCalculator(QWidget):
                     break  # Process only the first image
             except Exception as e:
                 self.drop_label.setText(f"Error loading image")
-                self.thumbnail_label.clear()
+                self.thumbnail_label.clear()  # Clear any previous thumbnail
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
