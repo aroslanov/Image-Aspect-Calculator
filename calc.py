@@ -43,6 +43,7 @@ class AspectRatioCalculator(QWidget):
         ratio_layout = QHBoxLayout()
         ratio_layout.addWidget(QLabel('Common ratios:'))
         self.ratio_combo = QComboBox()
+        self.ratio_combo.addItem("Please select aspect ratio", None)  # Add default item with no data attached
         self.ratio_combo.addItems([
             '1920 x 1080 (HD TV, iPhone 6 plus)',
             '1334 x 750 (iPhone 6)',
