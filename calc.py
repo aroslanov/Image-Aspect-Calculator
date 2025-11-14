@@ -5,6 +5,7 @@ from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QPixmap
 from PIL import Image
 import re
 import io
+from typing import Optional
 
 class AspectRatioCalculator(QWidget):
     def __init__(self):
@@ -131,15 +132,25 @@ class AspectRatioCalculator(QWidget):
             self.calculate_ratio()
         else:
             self.result_label.setText("Error: Could not parse the selected ratio")
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasUrls():
-            event.accept()
+    # Only one dragEnterEvent implementation is needed; remove the duplicate stub.
+    def dragEnterEvent(self, a0: Optional[QDragEnterEvent]):
+        # Type guard for the Optional event parameter
+        if a0 is None:
+            return
+        mime = a0.mimeData()
+        if mime is not None and mime.hasUrls():
+            a0.accept()
         else:
-            event.ignore()
+            a0.ignore()
 
-    def dropEvent(self, event: QDropEvent):
-        files = [u.toLocalFile() for u in event.mimeData().urls()]
+    def dropEvent(self, a0: Optional[QDropEvent]):
+        # Type guard for the Optional event parameter
+        if a0 is None:
+            return
+        mime = a0.mimeData()
+        if mime is None:
+            return
+        files = [u.toLocalFile() for u in mime.urls()]
         for file_path in files:
             try:
                 with Image.open(file_path) as img:
@@ -150,12 +161,12 @@ class AspectRatioCalculator(QWidget):
                     
                     # Create thumbnail
                     img.thumbnail((60, 60))  # Resize image to fit in our thumbnail label
-                    img_byte_arr = io.BytesIO()
-                    img.save(img_byte_arr, format='PNG')
-                    img_byte_arr = img_byte_arr.getvalue()
-                    
+                    bytes_io = io.BytesIO()
+                    img.save(bytes_io, format='PNG')
+                    img_bytes = bytes_io.getvalue()
+
                     pixmap = QPixmap()
-                    pixmap.loadFromData(img_byte_arr)
+                    pixmap.loadFromData(img_bytes)
                     self.thumbnail_label.setPixmap(pixmap)
                     
                     self.drop_label.setText("Image loaded")
