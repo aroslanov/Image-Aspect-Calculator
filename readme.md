@@ -49,6 +49,15 @@ Run the application using the following command:
 python aspect_ratio_calculator.py
 ```
 
+### Run on Windows without console window
+If you prefer to launch the GUI without a console window on Windows, use the provided batch file:
+
+1. Make sure the project's virtual environment is created and dependencies are installed (or ensure `pythonw` is on your PATH).
+2. Double-click `run_calculator_no_console.bat` in the repository root to start the GUI without opening a console window.
+3. The batch attempts to use `.venv\Scripts\pythonw.exe` by default and falls back to a `pythonw` executable on the PATH if it's not available.
+
+If you want to use the console for logging or debugging, run `python calc.py` instead.
+
 ## Dependencies
 
 - Python 3.x
