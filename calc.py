@@ -14,7 +14,7 @@ class AspectRatioCalculator(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Aspect Ratio Calculator')
-        self.setFixedSize(400, 300)  # Set a fixed size for the window
+        self.setFixedSize(500, 350)  # Set a fixed size for the window
         self.setAcceptDrops(True)  # Enable drop events
 
         main_layout = QVBoxLayout()
@@ -59,6 +59,20 @@ class AspectRatioCalculator(QWidget):
         # Checkbox for rounding
         self.round_checkbox = QCheckBox('Round results to the nearest whole number')
         main_layout.addWidget(self.round_checkbox)
+
+        # Checkbox and dropdown for divisor rounding
+        divisor_layout = QHBoxLayout()
+        self.divisor_checkbox = QCheckBox('Round to divisor:')
+        divisor_layout.addWidget(self.divisor_checkbox)
+        self.divisor_combo = QComboBox()
+        self.divisor_combo.addItems(['2', '8', '16', '32', '64'])
+        self.divisor_combo.setEnabled(False)
+        divisor_layout.addWidget(self.divisor_combo)
+        divisor_layout.addStretch()
+        main_layout.addLayout(divisor_layout)
+        
+        # Connect checkbox to enable/disable dropdown
+        self.divisor_checkbox.stateChanged.connect(self.toggle_divisor_dropdown)
 
         # Aspect ratio result
         self.result_label = QLabel('Your aspect ratio is:')
@@ -109,6 +123,10 @@ class AspectRatioCalculator(QWidget):
             if self.round_checkbox.isChecked():
                 w2 = round(w2)
                 h2 = round(h2)
+            elif self.divisor_checkbox.isChecked():
+                divisor = int(self.divisor_combo.currentText())
+                w2 = self.round_to_divisor(w2, divisor)
+                h2 = self.round_to_divisor(h2, divisor)
 
             self.w2_input.setText(str(w2) if w2 else '')
             self.h2_input.setText(str(h2) if h2 else '')
@@ -120,6 +138,14 @@ class AspectRatioCalculator(QWidget):
         while b:
             a, b = b, a % b
         return a
+
+    def round_to_divisor(self, value, divisor):
+        """Round a value to the nearest number divisible by the given divisor"""
+        return round(value / divisor) * divisor
+
+    def toggle_divisor_dropdown(self):
+        """Enable/disable divisor dropdown based on checkbox state"""
+        self.divisor_combo.setEnabled(self.divisor_checkbox.isChecked())
 
     def set_common_ratio(self, index):
         ratio_text = self.ratio_combo.currentText()
